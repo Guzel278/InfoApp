@@ -1,0 +1,9 @@
+version: '3.4'
+
+services:
+  userservice:
+    container_name: userservice
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+    ports:
+      - "8000:80"
