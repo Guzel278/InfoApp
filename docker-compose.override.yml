@@ -1,9 +1,24 @@
 version: '3.4'
 
 services:
+  userdb:
+     container_name: userdb
+     command: --default-authentication-plugin=mysql_native_password
+     restart: always
+     environment: 
+        MYSQL_ROOT_PASSWORD: admin1234
+
+     ports: 
+     - "3306:3306"
+     volumes:
+     - "./.mysql-data/db:/var/lib/mysql"
+
+
   userservice:
     container_name: userservice
     environment:
       - ASPNETCORE_ENVIRONMENT=Development
+    depends_on:
+      - userdb
     ports:
       - "8000:80"
