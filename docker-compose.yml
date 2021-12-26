@@ -1,13 +1,16 @@
 version: '3.4'
 
 services:
+
   userdb:
     image: mysql
+
   userservice:
     image: ${DOCKER_REGISTRY-}userservice
     build:
       context: .
       dockerfile: UserService/Dockerfile
+
 volumes:
   mysql_data:
   
