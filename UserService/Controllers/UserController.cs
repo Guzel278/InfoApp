@@ -9,6 +9,7 @@ using System.Threading.Tasks;
 using UserService.Data;
 using UserService.Models;
 using UserService.Repositories;
+using UserService.Services;
 
 namespace UserService.Controllers
 {
@@ -18,54 +19,59 @@ namespace UserService.Controllers
     {
         private readonly ILogger<UserController> logger;
         private readonly IUserRepository userRepository;
-        private readonly IDistributedCache cache;
-     
-        public UserController(ILogger<UserController> logger, IUserRepository userRepository, IDistributedCache cache)
+        private readonly IUserCache cache;
+        private readonly IUserCacheUpdate cacheUpdate;
+
+        public UserController(ILogger<UserController> logger, IUserRepository userRepository, IUserCache cache, IUserCacheUpdate cacheUpdate)
         {
             this.logger = logger ?? throw new ArgumentNullException(nameof(logger));
             this.userRepository = userRepository ?? throw new ArgumentNullException(nameof(userRepository));
             this.cache = cache ?? throw new ArgumentNullException(nameof(cache));
+            this.cacheUpdate = cacheUpdate ?? throw new ArgumentNullException(nameof(cacheUpdate));
         }
 
         [HttpGet]
         public async Task<IEnumerable<UserModel>> GetUserInfo()
         {
-           // var users = default(IEnumerable<UserModel>);
-            var usersCache = await cache.GetStringAsync("users");
-            if (usersCache == null)
+            IEnumerable<UserModel> users = await cache.GetUsersCacheAsync(); 
+            if (users == null)
             {
-                var users = await userRepository.GetUsersInfoAsync();
-                await cache.SetStringAsync("users", JsonConvert.SerializeObject(users));
-                return users;
+                users = await userRepository.GetUsersInfoAsync();
+                await cache.SetUsersCacheAsync(users);              
             }           
-            return await JsonConvert.DeserializeObjectAsync<IEnumerable<UserModel>>(usersCache);
+            return users;
         }
 
         [HttpGet("{id}", Name = "GetUser")]
-        [Consumes("application/x-www-form-urlencoded")]
+        //[Consumes("application/x-www-form-urlencoded")]
         public async Task<ActionResult<UserModel>> GetUserInfoById(int id)
         {
-            var user = await userRepository.GetUserInfoByIdAsync(id);
+            UserModel user = await cache.GetUserCacheAsync(id);
             if (user == null)
             {
-                logger.LogError($"User {id} not founded");
-                return NotFound();
+                user = await userRepository.GetUserInfoByIdAsync(id);
+                if (user == null)
+                {
+                    logger.LogError($"User {id} not founded");
+                    return NotFound();
+                }
             }
             return Ok(user);
         }
 
         [HttpPut]
-        [Consumes("application/x-www-form-urlencoded")]
+        //[Consumes("application/x-www-form-urlencoded")]
         public async Task<UserModel> SetUserStatus(int id, string status)
         {
             var user = await userRepository.GetUserInfoByIdAsync(id);
             user.Status = status;
             await userRepository.UpdateUserAsync(user);
+            await cacheUpdate.UpdateCacheAsync();
             return user;
         }
 
         [HttpPost]
-        [Consumes("application/xml")]
+       // [Consumes("application/xml")]
         public async Task<ActionResult<UserModel>> CreateUser(UserModel user)
         {
             await userRepository.CreateUserAsync(user);

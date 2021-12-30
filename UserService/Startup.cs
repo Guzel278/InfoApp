@@ -14,6 +14,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using UserService.Data;
 using UserService.Repositories;
+using UserService.Services;
 
 namespace UserService
 {
@@ -36,15 +37,15 @@ namespace UserService
             });
 
             services.AddControllersWithViews();
-            services.AddSwaggerGen(c =>
-            {
-                c.SwaggerDoc("v1", new OpenApiInfo { Title = "UserService", Version = "v1" });
-            });
+            //services.AddSwaggerGen(c =>
+            //{
+            //    c.SwaggerDoc("v1", new OpenApiInfo { Title = "UserService", Version = "v1" });
+            //});
             string mySqlConnectionString = Configuration.GetValue<string>("ConnectionString");
-            services.AddDbContextPool<UserContext>(options => options.UseMySql(mySqlConnectionString, ServerVersion.AutoDetect(mySqlConnectionString)));
+            services.AddDbContextPool<UserContext>(options => options.UseMySql(mySqlConnectionString, ServerVersion.AutoDetect(mySqlConnectionString)));           
             services.AddScoped<IUserRepository, UserRepository>();
-         
-            //services.AddControllers().AddXmlSerializerFormatters();
+            services.AddScoped<IUserCache, UserCache>();
+            services.AddScoped<IUserCacheUpdate, UserCacheUpdater>();                  
             services.AddMvc().AddXmlDataContractSerializerFormatters();
             services.AddControllers();
         }
@@ -52,8 +53,8 @@ namespace UserService
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
         {
-            app.UseSwagger();
-            app.UseSwaggerUI(c => c.SwaggerEndpoint("/swagger/v1/swagger.json", "Libriary.API v1"));
+            //app.UseSwagger();
+            //app.UseSwaggerUI(c => c.SwaggerEndpoint("/swagger/v1/swagger.json", "Libriary.API v1"));
             if (env.IsDevelopment())
             {
                 app.UseDeveloperExceptionPage();
