@@ -7,10 +7,10 @@ using System.Net.Http;
 
 namespace HttpClientUser
 {
-    public class InfoMethods
+    public class UserServiceClient
     {
-        static HttpClient client = new HttpClient();
-        public static  async Task<string> GetUsers()
+         HttpClient client = new HttpClient();
+        public   async Task<string> GetUsers()
         {
             var request = new HttpRequestMessage
             {
@@ -21,7 +21,7 @@ namespace HttpClientUser
             var result = new { ResultCode = GetResponse.StatusCode, Content = await GetResponse.Content.ReadAsStringAsync() };
             return JsonConvert.SerializeObject(result);
         }
-        public static async Task<string> GetUser(int id)
+        public  async Task<string> GetUser(int id)
         {
             var request = new HttpRequestMessage
             {
@@ -32,7 +32,7 @@ namespace HttpClientUser
             var result = new { ResultCode = GetResponse.StatusCode, Content = await GetResponse.Content.ReadAsStringAsync() };
             return JsonConvert.SerializeObject(result);
         }
-        public static async Task<string> CreateUser(int id, string name, string status)
+        public  async Task<string> CreateUser(int id, string name, string status)
         {            
             var request = new HttpRequestMessage
             {
@@ -49,7 +49,7 @@ namespace HttpClientUser
             var result = new { ResultCode = GetResponse.StatusCode, Content = await GetResponse.Content.ReadAsStringAsync() };
             return JsonConvert.SerializeObject(result);
         }
-        public static async Task<string> SetUserStatus(int id, string status)
+        public  async Task<string> SetUserStatus(int id, string status)
         {
             var request = new HttpRequestMessage
             {
@@ -60,7 +60,7 @@ namespace HttpClientUser
             var result = new { ResultCode = GetResponse.StatusCode, Content = await GetResponse.Content.ReadAsStringAsync() };
             return JsonConvert.SerializeObject(result);
         }
-        public static async Task<string> DeleteUserStatus(int id)
+        public  async Task<string> DeleteUserStatus(int id)
         {
             var request = new HttpRequestMessage
             {
