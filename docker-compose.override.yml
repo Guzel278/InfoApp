@@ -1,7 +1,6 @@
 version: '3.4'
 
 services:
-
   userdb:
      container_name: userdb
      command: --default-authentication-plugin=mysql_native_password
@@ -13,12 +12,19 @@ services:
      volumes:
        - "./.mysql-data/db:/var/lib/mysql"
 
+  usercache:
+     container_name: usercache
+     restart: always
+     ports:
+       - "6379:6379"
+
   userservice:
-    container_name: userservice
-    environment:
-      - ASPNETCORE_ENVIRONMENT=Development
-      - "ConnectionString=Server=userdb; port=3306; database=userInfo; user=root; password=admin1234; Persist Security Info=False; Connect Timeout=300"
-    depends_on:
-      - userdb
-    ports:
-      - "8000:80"
+     container_name: userservice
+     environment:
+       - ASPNETCORE_ENVIRONMENT=Development
+       - "ConnectionString=Server=userdb; port=3306; database=userInfo; user=root; password=admin1234; Persist Security Info=False; Connect Timeout=300"
+       - "RedisConnectionString=usercache:6379"
+     depends_on:
+       - userdb
+     ports:
+       - "8000:80"

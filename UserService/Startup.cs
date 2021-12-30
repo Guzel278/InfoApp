@@ -1,9 +1,12 @@
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Caching.Distributed;
+using Microsoft.Extensions.Caching.Redis;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using Microsoft.Net.Http.Headers;
 using Microsoft.OpenApi.Models;
 using System;
 using System.Collections.Generic;
@@ -26,6 +29,12 @@ namespace UserService
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
+            // Redis Configuration
+            services.AddStackExchangeRedisCache(options =>
+            {
+                options.Configuration = Configuration.GetValue<string>("RedisConnectionString"); //localhost:6379
+            });
+
             services.AddControllersWithViews();
             services.AddSwaggerGen(c =>
             {
@@ -33,7 +42,10 @@ namespace UserService
             });
             string mySqlConnectionString = Configuration.GetValue<string>("ConnectionString");
             services.AddDbContextPool<UserContext>(options => options.UseMySql(mySqlConnectionString, ServerVersion.AutoDetect(mySqlConnectionString)));
-            services.AddScoped<IUserRepository, UserRepository>();         
+            services.AddScoped<IUserRepository, UserRepository>();
+         
+            //services.AddControllers().AddXmlSerializerFormatters();
+            services.AddMvc().AddXmlDataContractSerializerFormatters();
             services.AddControllers();
         }
 
